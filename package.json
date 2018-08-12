@@ -4,8 +4,10 @@
   "private": true,
   "dependencies": {
     "@cycle/dom": "^20.4.0",
+    "@cycle/http": "^14.9.0",
     "@cycle/rxjs-run": "^9.2.0",
-    "rxjs": "^6.2.2"
+    "rxjs": "^6.2.2",
+    "rxjs-compat": "^6.2.2"
   },
   "scripts": {
     "start": "webpack-dev-server"

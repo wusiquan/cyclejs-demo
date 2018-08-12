@@ -1,13 +1,16 @@
 import './index.styl'
 
-import {run} from '@cycle/rxjs-run'
-import {makeDOMDriver} from '@cycle/dom'
-import {App} from './app'
+import { run } from '@cycle/rxjs-run'
+import { makeDOMDriver } from '@cycle/dom'
+import { makeHTTPDriver } from '@cycle/http'
+import { App } from './app'
 
 const main = App
 
 const drivers = {
-  DOM: makeDOMDriver('#app')
+  DOM1: makeDOMDriver('#app1'),
+  DOM2: makeDOMDriver('#app2'),
+  HTTP: makeHTTPDriver()
 }
 
 run(main, drivers)
