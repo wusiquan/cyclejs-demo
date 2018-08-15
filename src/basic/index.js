@@ -12,6 +12,7 @@ const drivers = {
   DOM2: makeDOMDriver('#app2'),
   DOM3: makeDOMDriver('#app3'),
   DOM4: makeDOMDriver('#app4'),
+  DOM5: makeDOMDriver('#app5'),
   HTTP: makeHTTPDriver()
 }
 

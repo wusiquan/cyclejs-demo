@@ -32,30 +32,30 @@ export function App(sources) {
     })
   )
 
-  // const responseUser$ = sources.HTTP.select('users').pipe(
-  //     flatMap(res => res),
-  //     map(res => res.body),
-  //     startWith(null)
-  //   )
+  const responseUser$ = sources.HTTP.select('users').pipe(
+      flatMap(res => res),
+      map(res => res.body),
+      startWith(null)
+    )
 
-  // const vdom2$ = responseUser$.pipe(
-  //   map(user => {
-  //     let userInfo = function(user) {
-  //       return <div className="user-details">
-  //         <h1 className="user-name">{user.name}</h1>
-  //         <h4 className="user-email">{user.email}</h4>
-  //         <a href={user.website} className="user-website">{user.website}</a>
-  //       </div>
-  //     }
+  const vdom2$ = responseUser$.pipe(
+    map(user => {
+      let userInfo = function(user) {
+        return <div className="user-details">
+          <h1 className="user-name">{user.name}</h1>
+          <h4 className="user-email">{user.email}</h4>
+          <a href={user.website} className="user-website">{user.website}</a>
+        </div>
+      }
 
-  //     let r = <div class="users">
-  //       <button className="get-random">获取随机用户</button>
-  //       {user === null ? null : userInfo(user)}
-  //     </div>
+      let r = <div class="users">
+        <button className="get-random">获取随机用户</button>
+        {user === null ? null : userInfo(user)}
+      </div>
 
-  //     return r
-  //   })
-  // )
+      return r
+    })
+  )
   /* 例2 <---end*/
   
   /*start---> 例3 */
@@ -82,7 +82,7 @@ export function App(sources) {
   )
   /* 例3 <---end*/
 
-  /*start---> 例4  */
+  /*start---> 例4 */
   const changeWeight$ = sources.DOM4.select('.weight').events('input')
     .pipe(
       map(event => {
@@ -121,7 +121,7 @@ export function App(sources) {
           <div>
             <span>Height</span>
             <input className="height" type="range" min="140" max="210" />
-            <span>{height}kg</span>
+            <span>{height}cm</span>
           </div>
           <h2>BMI is {bmi}</h2>
         </div>
@@ -129,14 +129,97 @@ export function App(sources) {
     )
   /* 例4 <---end*/
 
+  /*start---> 例5 */
+  /* 例5 <---end*/
+
   const sinks = {
     DOM1: vtree$,
-    //DOM2: vdom2$,
+    DOM2: vdom2$,
     DOM3: vdom3$,
     DOM4: vdom4$,
+    DOM5: view(model(intent(sources.DOM5))),
     HTTP: getRandomUser$
   }
 
   return sinks
 }
 
+function intent(domSource) {
+  return {
+    changeWeight$: domSource.select('.weight').events('input')
+      .pipe(
+        map(ev => ev.target.value)
+      ),
+      
+    changeHeight$: domSource.select('.height').events('input')
+      .pipe(
+        map(ev => ev.target.value)
+      )
+  }
+}
+
+function model(actions) {
+  const weight$ = actions.changeWeight$.pipe(
+    startWith(70)
+  )
+
+  const height$ = actions.changeHeight$.pipe(
+    startWith(170)
+  )
+
+  return combineLatest(weight$, height$)
+    .pipe(
+      map(([weight, height]) => {
+        weight = Number(weight)
+        height = Number(height)
+    
+        return { weight, height, bmi: bmi(weight, height) }
+      })
+    )
+}
+
+function view(state$) {
+  return state$.pipe(
+    map(({ weight, height, bmi}) => {
+      return <div>
+        {renderWeightSlider(weight)}
+        {renderHeightSlider(height)}
+        <h2>BMI is {bmi}</h2>
+      </div>
+    })
+  )
+}
+
+function bmi(weight, height) {
+  const heightMeters = height * 0.01
+  return Math.round(weight / (heightMeters * heightMeters))
+}
+
+// Don't Repeat Yourself
+function renderWeightSlider(weight) {
+  return renderSlider('Weight', weight, 'kg', 'weight', 40, 140)
+  // return <div>
+  //   <span>Weight</span>
+  //   <input className="weight" type="range" min="40" max="140" />
+  //   <span>{weight}kg</span>
+  // </div>
+}
+
+// Don't Repeat Yourself
+function renderHeightSlider(height) {
+  return renderSlider('Height', height, 'cm', 'height', 140, 210)
+  // return <div>
+  //   <span>Height</span>
+  //   <input className="height" type="range" min="140" max="210" />
+  //   <span>{height}cm</span>
+  // </div>
+}
+
+// NOTE: 但这种方式并不好，所以我们需要component
+function renderSlider(label, value, unit, className, min, max) {
+  return <div>
+    <span>{label}</span>
+    <input className={className} type="range" min={min} max={max} />
+    <span>{value}{unit}</span>
+  </div>
+}
